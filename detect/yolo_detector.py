@@ -12,22 +12,23 @@ class YoloDetector:
     - Trả về danh sách dict: [{bbox, conf, cls, label}, ...]
     """
 
-    def __init__(self, model_path=None, conf_thres=0.2):
-        # Xác định đường dẫn mặc định
-        if model_path is None:
-            current_dir = Path(__file__).parent
-            model_path = current_dir / "models" / "yolo11s.pt"
-        
-        # chọn device tự động
+    def __init__(self, model_name="yolo11s.pt", conf_thres=0.2):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model_path = self.resolve_model_path(model_name)
         print(f"[YOLO] Loading model on device: {self.device}")
-        print(f"[YOLO] Model path: {model_path}")
+        print(f"[YOLO] Model path: {self.model_path}")
 
-        # load model
-        self.model = YOLO(model_path)
+        self.model = YOLO(self.model_path)
         self.model.to(self.device)
         self.conf_thres = conf_thres
         self.names = self.model.names
+
+    def resolve_model_path(self, model_name):
+        current_dir = Path(__file__).parent
+        model_path = current_dir / "models" / model_name
+        if not model_path.exists():
+            raise FileNotFoundError(f"Không tìm thấy model: {model_path}")
+        return model_path
 
     def predict(self, frame: np.ndarray, class_filter=None):
         """
