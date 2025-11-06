@@ -2,6 +2,7 @@
 from ultralytics import YOLO
 import torch
 import numpy as np
+from pathlib import Path
 
 class YoloDetector:
     """
@@ -11,17 +12,24 @@ class YoloDetector:
     - Trả về danh sách dict: [{bbox, conf, cls, label}, ...]
     """
 
-    def __init__(self, model_path="yolo11n.pt", conf_thres=0.4):
+    def __init__(self, model_path=None, conf_thres=0.2):
+        # Xác định đường dẫn mặc định
+        if model_path is None:
+            current_dir = Path(__file__).parent
+            model_path = current_dir / "models" / "yolo11s.pt"
+        
         # chọn device tự động
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"[YOLO] Loading model on device: {self.device}")
+        print(f"[YOLO] Model path: {model_path}")
 
         # load model
         self.model = YOLO(model_path)
         self.model.to(self.device)
         self.conf_thres = conf_thres
+        self.names = self.model.names
 
-    def predict(self, frame: np.ndarray):
+    def predict(self, frame: np.ndarray, class_filter=None):
         """
         Nhận 1 frame (numpy BGR), trả danh sách detection.
         Mỗi detection gồm: {'bbox': [x1, y1, x2, y2], 'conf': float, 'cls': int, 'label': str}
@@ -37,6 +45,8 @@ class YoloDetector:
         detections = []
         if not results or len(results) == 0:
             return detections
+        
+
 
         r = results[0]
         boxes = r.boxes.xyxy.cpu().numpy()
@@ -44,6 +54,11 @@ class YoloDetector:
         classes = r.boxes.cls.cpu().numpy().astype(int)
 
         for i in range(len(boxes)):
+            cls_id = int(classes[i])
+            if class_filter and cls_id not in class_filter:
+                continue
+
+
             x1, y1, x2, y2 = boxes[i].tolist()
             detections.append({
                 "bbox": [x1, y1, x2, y2],
