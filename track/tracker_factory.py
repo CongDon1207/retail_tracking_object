@@ -1,5 +1,6 @@
 from .yolo_tracker_botsort import YoloBoTSORTTracker
 from .yolo_tracker_bytetrack import YoloByteTracker
+from .deepsort_tracker import DeepSORTTracker
 
 
 def create_tracker(tracker_name: str, model_path: str, **kwargs):
@@ -8,4 +9,6 @@ def create_tracker(tracker_name: str, model_path: str, **kwargs):
         return YoloBoTSORTTracker(model_path)
     if t == "bytetrack":
         return YoloByteTracker(model_path)
-    raise ValueError(f"Unknown tracker: {tracker_name}. Hỗ trợ: botsort | bytetrack")
+    if t == "deepsort":
+        return DeepSORTTracker(model_path, conf_thres=kwargs.get("conf_thres", 0.25))
+    raise ValueError(f"Unknown tracker: {tracker_name}. Hỗ trợ: botsort | bytetrack | deepsort")

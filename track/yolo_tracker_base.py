@@ -20,7 +20,12 @@ def _resolve_tracker_yaml(name: str) -> str:
     Ưu tiên YAML trong track/config/, nếu không có thì để Ultralytics tự dùng default.
     """
     local = Path(__file__).resolve().parent / "config" / name
-    return str(local) if local.exists() else name
+    if local.exists():
+        print(f"[Tracker] Sử dụng YAML custom: {local}")
+        return str(local)
+    else:
+        print(f"[Tracker] YAML custom không tìm thấy, dùng mặc định Ultralytics: {name}")
+        return name
 
 class YoloTrackerBase:
     """
@@ -29,8 +34,11 @@ class YoloTrackerBase:
     """
     def __init__(self, model_name: str, tracker_yaml: str):
         model_path = _resolve_model_path(model_name)
+        print(f"[Tracker] Loading model: {model_path}")
         self.model = YOLO(model_path)
         self.tracker_yaml = _resolve_tracker_yaml(tracker_yaml)
+        print(f"[Tracker] Tracker config: {self.tracker_yaml}")
+        print("-" * 60)
 
     def track(self, source: str, show=False, save=False, classes=None) -> Iterator[Dict[str, Any]]:
         """

@@ -4,18 +4,18 @@
 # Docs: https://docs.ultralytics.com/modes/track/
 
 tracker_type: botsort # (str) Tracker backend: botsort|bytetrack; choose botsort to enable BoT-SORT features
-track_high_thresh: 0.25 # (float) First-stage match threshold; raise for cleaner tracks, lower to keep more
-track_low_thresh: 0.1 # (float) Second-stage threshold for low-score matches; balances recovery vs drift
-new_track_thresh: 0.25 # (float) Start a new track if no match ≥ this; higher reduces false tracks
-track_buffer: 30 # (int) Frames to keep lost tracks alive; higher handles occlusion, increases ID switches risk
-match_thresh: 0.8 # (float) Association similarity threshold (IoU/cost); tune with detector quality
+track_high_thresh: 0.5 # (float) First-stage match threshold; TĂNG để track chặt chẽ hơn (0.25 -> 0.5)
+track_low_thresh: 0.2 # (float) Second-stage threshold; TĂNG để giảm false matches (0.1 -> 0.2)
+new_track_thresh: 0.6 # (float) Start new track threshold; TĂNG cao để tránh tạo ID mới linh tinh (0.15 -> 0.6)
+track_buffer: 60 # (int) GIẢM buffer để xóa track cũ nhanh hơn, tránh ID tăng vô tội vạ (200 -> 60)
+match_thresh: 0.8 # (float) TĂNG để matching chặt chẽ hơn (0.75 -> 0.8)
 fuse_score: True # (bool) Fuse detection score with motion/IoU for matching; stabilizes weak detections
 
 # BoT-SORT specifics
-gmc_method: sparseOptFlow # (str) Global motion compensation: sparseOptFlow|orb|none; helps moving camera scenes
+gmc_method: none # (str) Global motion compensation: sparseOptFlow|orb|none; helps moving camera scenes
 
 # ReID model related thresh
-proximity_thresh: 0.5 # (float) Min IoU to consider tracks proximate for ReID; higher is stricter
-appearance_thresh: 0.8 # (float) Min appearance similarity for ReID; raise to avoid identity swaps
-with_reid: False # (bool) Enable ReID model use; needs extra model and compute
-model: auto # (str) ReID model name/path; "auto" uses detector features if available
+proximity_thresh: 0.55 # (float) Min IoU to consider tracks proximate for ReID; higher is stricter
+appearance_thresh: 0.6 # (float) Min appearance similarity for ReID; raise to avoid identity swaps
+with_reid: True # (bool) TẮT ReID vì file model bị lỗi
+model: auto # (str) ReID model path (đường dẫn từ root project)

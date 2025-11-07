@@ -8,10 +8,10 @@ import cv2
 if __name__ == "__main__":
     # --- cấu hình ---
     model_name = "yolo11l.pt"   # chỉ cần tên file, tự tìm trong detect/models/
-    video_path = "data/video2.mp4"
+    video_path = "data/video.mp4"
     tracker_type = "botsort"    # hoặc "bytetrack"
     class_filter = [0]          # chỉ track người
-    out_jsonl = "metadata/video2.jsonl"
+    out_jsonl = "metadata/video.jsonl"
 
     # --- metadata chung ---
     pipeline_run_id = uuid.uuid4().hex
