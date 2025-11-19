@@ -20,6 +20,11 @@ def _get_env(name: str, default: str) -> str:
     return v if v is not None and v != "" else default
 
 
+def _get_env(name: str, default: str) -> str:
+    v = os.getenv(name)
+    return v if v is not None and v != "" else default
+
+
 class DeepSORTTracker:
     """
     DeepSORT tracker sử dụng deep-sort-realtime + YOLO detector.

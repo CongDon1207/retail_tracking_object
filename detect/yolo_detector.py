@@ -3,6 +3,7 @@ from ultralytics import YOLO
 import torch
 import numpy as np
 from pathlib import Path
+from utils.path_utils import resolve_model_path
 
 class YoloDetector:
     """
@@ -14,7 +15,7 @@ class YoloDetector:
 
     def __init__(self, model_name="yolo11s.pt", conf_thres=0.2):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model_path = self.resolve_model_path(model_name)
+        self.model_path = resolve_model_path(model_name)
         print(f"[YOLO] Loading model on device: {self.device}")
         print(f"[YOLO] Model path: {self.model_path}")
 
@@ -22,13 +23,6 @@ class YoloDetector:
         self.model.to(self.device)
         self.conf_thres = conf_thres
         self.names = self.model.names
-
-    def resolve_model_path(self, model_name):
-        current_dir = Path(__file__).parent
-        model_path = current_dir / "models" / model_name
-        if not model_path.exists():
-            raise FileNotFoundError(f"Không tìm thấy model: {model_path}")
-        return model_path
 
     def predict(self, frame: np.ndarray, class_filter=None):
         """
