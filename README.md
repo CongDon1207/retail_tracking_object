@@ -232,6 +232,24 @@ File config trong `track/config/`:
 
 Tham khảo docs Ultralytics để tùy chỉnh nâng cao.
 
+DeepSORT (tinh chỉnh nhanh qua ENV):
+- Chọn `tracker_type = "deepsort"` trong `main.py`.
+- Biến môi trường hỗ trợ (mặc định tối ưu camera tĩnh, occlusion ~1–3s):
+  - `DS_MAX_AGE` (mặc định 90)
+  - `DS_N_INIT` (mặc định 3)
+  - `DS_MAX_IOU_DISTANCE` (mặc định 0.7)
+  - `DEEPSORT_EMBEDDER` = `mobilenet` | `torchreid` (mặc định mobilenet)
+  - `DEEPSORT_EMBEDDER_GPU` = 1|0 (mặc định 1)
+  - `DS_DET_CONF` (mặc định lấy từ code, ~0.2–0.25)
+- Ví dụ (Linux/macOS):
+  - `export DS_MAX_AGE=120 DS_N_INIT=3 DS_MAX_IOU_DISTANCE=0.75 DEEPSORT_EMBEDDER=torchreid DS_DET_CONF=0.2`
+
+Gợi ý cho camera tĩnh & đông người (giảm ID nhảy qua occlusion):
+- BoT-SORT + ReID: bật `with_reid: True` và ưu tiên `model: auto` để dùng đặc trưng native của YOLO (Ultralytics). Nếu chỉ định model riêng, dùng file YOLO `.pt` hợp lệ, không dùng `.pth`.
+- Tăng thời gian giữ track: `track_buffer: 90`
+- Siết matching vừa phải: `track_high_thresh: 0.4`, `match_thresh: 0.75`
+- Camera tĩnh: `gmc_method: none`
+
 ---
 
 ## 🔧 Troubleshooting

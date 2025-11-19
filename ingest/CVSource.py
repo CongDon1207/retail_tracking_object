@@ -13,7 +13,7 @@ def get_fps(cap, fallback=25.0):
     fps = cap.get(cv2.CAP_PROP_FPS)
     return fps if fps and fps > 0 else fallback
 
-def ingest_video(src, camera_id="cam_0", realtime=False, fps_hint=None):
+def ingest_video(src, camera_id="cam_0", realtime=True, fps_hint=None):
     """Đọc từng frame từ video/RTSP, yield frame + metadata."""
     cap = open_source(src)
     fps = fps_hint or get_fps(cap)

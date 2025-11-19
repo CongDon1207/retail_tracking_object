@@ -8,7 +8,7 @@ import cv2
 if __name__ == "__main__":
     # --- cấu hình ---
     model_name = "yolo11l.pt"   # chỉ cần tên file, tự tìm trong detect/models/
-    video_path = "data/video.mp4"
+    video_path = "data/video3.mp4"
     tracker_type = "botsort"    # hoặc "bytetrack"
     class_filter = [0]          # chỉ track người
     out_jsonl = "metadata/video.jsonl"
@@ -27,13 +27,30 @@ if __name__ == "__main__":
             frame = record["frame"]  # lấy frame từ record
             H, W = frame.shape[:2]
 
-            # vẽ như cũ
+            # vẽ bbox và label với background
             for obj in record["objects"]:
                 x1, y1, x2, y2 = map(int, obj["bbox"])
                 label = f"{obj['label']} ID:{obj['id']} {obj['conf']:.2f}"
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, label, (x1, y1 - 5),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                
+                # Vẽ bbox màu lightblue
+                color = (255, 191, 0)  # BGR: lightblue
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                
+                # Tính kích thước text để vẽ background
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                font_scale = 0.45  # Giảm từ 0.6 xuống 0.45
+                thickness = 1      # Giảm từ 2 xuống 1
+                (text_w, text_h), baseline = cv2.getTextSize(label, font, font_scale, thickness)
+                
+                # Vẽ background cho text (màu tối hơn)
+                cv2.rectangle(frame, 
+                             (x1, y1 - text_h - baseline - 5),
+                             (x1 + text_w, y1),
+                             color, -1)  # Fill
+                
+                # Vẽ text màu đen trên background
+                cv2.putText(frame, label, (x1, y1 - baseline - 2),
+                           font, font_scale, (0, 0, 0), thickness)
 
             # map sang detections theo schema đã thống nhất
             detections = []
