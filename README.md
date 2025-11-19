@@ -29,7 +29,6 @@ Hệ thống tracking người và vật thể trong môi trường bán lẻ s�
 retail/
 ├── data/                    # Video đầu vào
 │   ├── video.mp4
-│   ├── video2.mp4
 │   └── ...
 │
 ├── detect/                  # Module phát hiện đối tượng
@@ -49,16 +48,17 @@ retail/
 │   ├── config/              # YAML config cho tracker
 │   │   ├── botsort.yaml
 │   │   └── bytetrack.yaml
-│   ├── yolo_tracker_base.py # Base class cho tracker
-│   ├── botsort_tracker.py   # Tracker sử dụng BoTSORT
-│   ├── bytetrack_tracker.py # Tracker sử dụng ByteTrack
-│   └── tracker_factory.py   # Factory tạo tracker
+│   ├── yolo_tracker_base.py      # Base class cho tracker
+│   ├── yolo_tracker_botsort.py   # Tracker sử dụng BoTSORT
+│   ├── yolo_tracker_bytetrack.py # Tracker sử dụng ByteTrack
+│   ├── deepsort_tracker.py       # Tracker sử dụng DeepSORT
+│   └── tracker_factory.py        # Factory tạo tracker
 │
 ├── emit/                    # Module xuất metadata
 │   └── json_emitter.py      # Ghi tracking results sang JSONL
 │
 ├── metadata/                # Thư mục lưu output JSONL
-│   └── video2.jsonl
+│   └── video.jsonl
 │
 ├── main.py                  # Script chính để chạy tracking
 ├── setup.txt                # Dependencies
