@@ -1,6 +1,7 @@
 # track/deepsort_tracker.py
 from pathlib import Path
 from typing import Dict, Iterator, List, Any
+import os
 from deep_sort_realtime.deepsort_tracker import DeepSort
 from detect.yolo_detector import YoloDetector
 from ingest.CVSource import ingest_video
@@ -14,6 +15,11 @@ def _resolve_model_path(model_name: str) -> str:
         raise FileNotFoundError(f"Không tìm thấy model '{model_name}' trong {detect_dir}")
     return str(model_path)
 
+def _get_env(name: str, default: str) -> str:
+    v = os.getenv(name)
+    return v if v is not None and v != "" else default
+
+
 class DeepSORTTracker:
     """
     DeepSORT tracker sử dụng deep-sort-realtime + YOLO detector.
@@ -21,18 +27,27 @@ class DeepSORTTracker:
     """
     def __init__(self, model_name: str, conf_thres: float = 0.25):
         print(f"[DeepSORT] Khởi tạo DeepSORT tracker")
-        print(f"[DeepSORT] Model: {model_name}, Conf: {conf_thres}")
-        
+        # Đọc tham số từ ENV (tối ưu cho camera tĩnh, occlusion ~1-3s)
+        max_age = int(float(_get_env("DS_MAX_AGE", "90")))            # giữ track tối đa ~3s @30FPS
+        n_init = int(float(_get_env("DS_N_INIT", "3")))               # số frame xác nhận track
+        max_iou_distance = float(_get_env("DS_MAX_IOU_DISTANCE", "0.7"))
+        embedder = _get_env("DEEPSORT_EMBEDDER", "mobilenet")          # mobilenet | torchreid
+        embedder_gpu = _get_env("DEEPSORT_EMBEDDER_GPU", "1") in {"1", "true", "True"}
+        det_conf = float(_get_env("DS_DET_CONF", str(conf_thres)))
+
+        print(f"[DeepSORT] Model: {model_name}, YOLO conf: {det_conf}")
+        print(f"[DeepSORT] Params -> max_age={max_age}, n_init={n_init}, max_iou_distance={max_iou_distance}, embedder={embedder}, embedder_gpu={embedder_gpu}")
+
         # Khởi tạo YOLO detector
-        self.detector = YoloDetector(model_name=model_name, conf_thres=conf_thres)
-        
-        # Khởi tạo DeepSORT
+        self.detector = YoloDetector(model_name=model_name, conf_thres=det_conf)
+
+        # Khởi tạo DeepSORT (chỉ truyền tham số an toàn theo API đã dùng)
         self.tracker = DeepSort(
-            max_age=30,              # Số frame tối đa giữ track khi mất detection
-            n_init=3,                # Số frame khởi tạo track
-            max_iou_distance=0.7,    # IoU threshold
-            embedder="mobilenet",    # Feature extractor: mobilenet | torchreid
-            embedder_gpu=True        # Dùng GPU cho embedder
+            max_age=max_age,
+            n_init=n_init,
+            max_iou_distance=max_iou_distance,
+            embedder=embedder,
+            embedder_gpu=embedder_gpu,
         )
         print(f"[DeepSORT] Tracker initialized")
         print("-" * 60)

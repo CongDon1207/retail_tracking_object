@@ -1,6 +1,7 @@
 # track/yolo_tracker_base.py
 from pathlib import Path
 from typing import Dict, Iterator, List, Any
+import os
 from ultralytics import YOLO
 
 def _resolve_model_path(model_name: str) -> str:
@@ -51,12 +52,15 @@ class YoloTrackerBase:
             classes: list các class ID cần track (vd: [0] cho person, [0,2,5] cho nhiều class)
                     None = track tất cả
         """
+        # Cho phép chỉnh ngưỡng detect qua ENV để debug occlusion nhanh
+        track_conf = float(os.getenv("YOLO_TRACK_CONF", "0.20"))
         results_gen = self.model.track(
             source=source,
             show=show,
             save=save,
             tracker=self.tracker_yaml,
             classes=classes,  # filter class
+            conf=track_conf,
             stream=True,
             verbose=False
         )
