@@ -3,30 +3,7 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Any
 import os
 from ultralytics import YOLO
-
-def _resolve_model_path(model_name: str) -> str:
-    """
-    Chỉ nhận tên file (vd: 'yolo11n.pt'), luôn tìm trong detect/models/.
-    """
-    detect_dir = Path(__file__).resolve().parents[1] / "detect" / "models"
-    model_path = detect_dir / model_name
-
-    if not model_path.is_file():
-        raise FileNotFoundError(f"Không tìm thấy model '{model_name}' trong {detect_dir}")
-
-    return str(model_path)
-
-def _resolve_tracker_yaml(name: str) -> str:
-    """
-    Ưu tiên YAML trong track/config/, nếu không có thì để Ultralytics tự dùng default.
-    """
-    local = Path(__file__).resolve().parent / "config" / name
-    if local.exists():
-        print(f"[Tracker] Sử dụng YAML custom: {local}")
-        return str(local)
-    else:
-        print(f"[Tracker] YAML custom không tìm thấy, dùng mặc định Ultralytics: {name}")
-        return name
+from utils.path_utils import resolve_model_path, resolve_tracker_config
 
 class YoloTrackerBase:
     """
@@ -34,10 +11,10 @@ class YoloTrackerBase:
     Các lớp con chỉ cần truyền tên yaml ('botsort.yaml' hoặc 'bytetrack.yaml')
     """
     def __init__(self, model_name: str, tracker_yaml: str):
-        model_path = _resolve_model_path(model_name)
+        model_path = resolve_model_path(model_name)
         print(f"[Tracker] Loading model: {model_path}")
         self.model = YOLO(model_path)
-        self.tracker_yaml = _resolve_tracker_yaml(tracker_yaml)
+        self.tracker_yaml = resolve_tracker_config(tracker_yaml)
         print(f"[Tracker] Tracker config: {self.tracker_yaml}")
         print("-" * 60)
 

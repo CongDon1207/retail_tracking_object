@@ -1,60 +1,42 @@
 # main.py
 from track.tracker_factory import create_tracker
 from emit.json_emitter import JsonEmitter
+from utils.visualizer import Visualizer
+from config.settings import settings
 from datetime import datetime, timezone
 import uuid
 import cv2
 
 if __name__ == "__main__":
-    # --- cấu hình ---
-    model_name = "yolo11l.pt"   # chỉ cần tên file, tự tìm trong detect/models/
-    video_path = "data/video3.mp4"
-    tracker_type = "botsort"    # hoặc "bytetrack"
-    class_filter = [0]          # chỉ track người
-    out_jsonl = "metadata/video.jsonl"
-
     # --- metadata chung ---
     pipeline_run_id = uuid.uuid4().hex
-    source = {"store_id": "store_01", "camera_id": "cam_01", "stream_id": "stream_01"}
+    source = {
+        "store_id": settings.STORE_ID,
+        "camera_id": settings.CAMERA_ID,
+        "stream_id": settings.STREAM_ID
+    }
 
     # --- khởi tạo ---
-    tracker = create_tracker(tracker_type, model_name)
-    emitter = JsonEmitter(out_jsonl)
+    print(f"[Main] Starting pipeline run: {pipeline_run_id}")
+    print(f"[Main] Config: Model={settings.MODEL_NAME}, Tracker={settings.TRACKER_TYPE}, Video={settings.VIDEO_PATH}")
+    
+    tracker = create_tracker(settings.TRACKER_TYPE, settings.MODEL_NAME, conf_thres=settings.CONF_THRES)
+    emitter = JsonEmitter(settings.OUT_JSONL)
+    visualizer = Visualizer()
 
     try:
         # --- chạy tracking ---
-        for idx, record in enumerate(tracker.track(video_path, show=False, classes=class_filter), start=1):
-            frame = record["frame"]  # lấy frame từ record
+        for idx, record in enumerate(tracker.track(settings.VIDEO_PATH, show=False, classes=settings.CLASS_FILTER), start=1):
+            frame = record["frame"]
             H, W = frame.shape[:2]
+            objects = record["objects"]
 
-            # vẽ bbox và label với background
-            for obj in record["objects"]:
-                x1, y1, x2, y2 = map(int, obj["bbox"])
-                label = f"{obj['label']} ID:{obj['id']} {obj['conf']:.2f}"
-                
-                # Vẽ bbox màu lightblue
-                color = (255, 191, 0)  # BGR: lightblue
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                
-                # Tính kích thước text để vẽ background
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                font_scale = 0.45  # Giảm từ 0.6 xuống 0.45
-                thickness = 1      # Giảm từ 2 xuống 1
-                (text_w, text_h), baseline = cv2.getTextSize(label, font, font_scale, thickness)
-                
-                # Vẽ background cho text (màu tối hơn)
-                cv2.rectangle(frame, 
-                             (x1, y1 - text_h - baseline - 5),
-                             (x1 + text_w, y1),
-                             color, -1)  # Fill
-                
-                # Vẽ text màu đen trên background
-                cv2.putText(frame, label, (x1, y1 - baseline - 2),
-                           font, font_scale, (0, 0, 0), thickness)
+            # Hiển thị (Vẽ bbox và label)
+            visualizer.draw_tracks(frame, objects)
 
             # map sang detections theo schema đã thống nhất
             detections = []
-            for j, obj in enumerate(record["objects"]):
+            for j, obj in enumerate(objects):
                 x1, y1, x2, y2 = map(float, obj["bbox"])
                 w = x2 - x1
                 h = y2 - y1
@@ -81,12 +63,12 @@ if __name__ == "__main__":
                 image_size={"width": W, "height": H},
                 detections=detections,
                 runtime={
-                    "model_name": model_name,
-                    "tracker_type": tracker_type,
-                    "conf_thres": 0.25,
-                    "class_filter": class_filter
+                    "model_name": settings.MODEL_NAME,
+                    "tracker_type": settings.TRACKER_TYPE,
+                    "conf_thres": settings.CONF_THRES,
+                    "class_filter": settings.CLASS_FILTER
                 },
-                source_uri=video_path
+                source_uri=settings.VIDEO_PATH
             )
 
             # hiển thị

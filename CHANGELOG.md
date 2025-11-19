@@ -5,3 +5,5 @@
 2025-11-07: Add DeepSORT tuning - Read parameters from ENV (DS_MAX_AGE, DS_N_INIT, DS_MAX_IOU_DISTANCE, DEEPSORT_EMBEDDER, DS_DET_CONF) and document usage in README (completed).
 2025-11-07: Retune BoT-SORT for occlusion - Lower proximity_thresh to 0.35, set new_track_thresh to 0.45, set gmc_method to none, raise appearance_thresh to 0.6 (camera static) (completed).
 2025-11-07: Add YOLO_TRACK_CONF env - Allow overriding track conf via ENV in track/yolo_tracker_base.py for quick tuning (completed).
+2025-11-19: Refactor codebase - Extract `utils/path_utils.py`, `emit/visualizer.py`, `config/settings.py` and refactor `main.py` to improve modularity and remove hardcoding (completed).
+2025-11-19: Move Visualizer - Relocate `emit/visualizer.py` to `utils/visualizer.py` for better semantic organization (completed).
